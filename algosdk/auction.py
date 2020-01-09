@@ -1,6 +1,6 @@
 from collections import OrderedDict
 import base64
-from . import encoding, constants
+from . import util, constants
 from nacl.signing import SigningKey
 
 
@@ -36,8 +36,8 @@ class Bid:
     def dictify(self):
         od = OrderedDict()
         od["aid"] = self.auction_id
-        od["auc"] = encoding.decode_address(self.auction_key)
-        od["bidder"] = encoding.decode_address(self.bidder)
+        od["auc"] = util.decode_address(self.auction_key)
+        od["bidder"] = util.decode_address(self.bidder)
         od["cur"] = self.bid_currency
         od["id"] = self.bid_id
         od["price"] = self.max_price
@@ -53,7 +53,7 @@ class Bid:
         Returns:
             SignedBid: signed bid with the signature
         """
-        temp = encoding.msgpack_encode(self)
+        temp = util.msgpack_encode(self)
         to_sign = constants.bid_prefix + base64.b64decode(temp)
         private_key = base64.b64decode(private_key)
         signing_key = SigningKey(private_key[:constants.key_len_bytes])
@@ -64,8 +64,7 @@ class Bid:
 
     @staticmethod
     def undictify(d):
-        return Bid(encoding.encode_address(d["bidder"]), d["cur"], d["price"],
-                   d["id"], encoding.encode_address(d["auc"]), d["aid"])
+        return Bid(util.encode_address(d["bidder"]), d["cur"], d["price"], d["id"], util.encode_address(d["auc"]), d["aid"])
 
     def __eq__(self, other):
         if not isinstance(other, Bid):

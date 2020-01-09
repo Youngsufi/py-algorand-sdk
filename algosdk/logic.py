@@ -3,7 +3,7 @@ import os
 
 from . import constants
 from . import error
-from . import encoding
+from . import util
 
 spec = None
 opcodes = None
@@ -140,5 +140,5 @@ def address(program):
         str: program address
     """
     to_sign = constants.logic_prefix + program
-    checksum = encoding.checksum(to_sign)
-    return encoding.encode_address(checksum)
+    checksum = util.checksum(to_sign)
+    return util.encode_address(checksum)

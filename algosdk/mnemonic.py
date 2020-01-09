@@ -3,7 +3,7 @@ import base64
 from . import wordlist
 from . import error
 from . import constants
-from . import encoding
+from . import util
 
 
 word_list = wordlist.word_list_raw().split("\n")
@@ -79,7 +79,7 @@ def to_public_key(mnemonic):
     """
     key_bytes = _to_key(mnemonic)
     key = signing.SigningKey(key_bytes)
-    return encoding.encode_address(key.verify_key.encode())
+    return util.encode_address(key.verify_key.encode())
 
 
 def _from_key(key):
@@ -135,7 +135,7 @@ def _checksum(data):
     Returns:
         bytes: checksum
     """
-    chksum = encoding.checksum(data)
+    chksum = util.checksum(data)
     temp = chksum[0:2]
     nums = _to_11_bit(temp)
     return _apply_words(nums)[0]

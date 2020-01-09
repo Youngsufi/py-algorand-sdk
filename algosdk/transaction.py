@@ -1,11 +1,10 @@
 import base64
 import msgpack
 from collections import OrderedDict
-from . import account
 from . import constants
-from . import encoding
 from . import error
 from . import logic
+from . import util
 from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
 
@@ -37,11 +36,11 @@ class Transaction:
         Returns:
             str: transaction ID
         """
-        txn = encoding.msgpack_encode(self)
+        txn = util.msgpack_encode(self)
         to_sign = constants.txid_prefix + base64.b64decode(txn)
-        txid = encoding.checksum(to_sign)
+        txid = util.checksum(to_sign)
         txid = base64.b32encode(txid).decode()
-        return encoding._undo_padding(txid)
+        return util._undo_padding(txid)
 
     def sign(self, private_key):
         """
@@ -69,7 +68,7 @@ class Transaction:
             bytes: signature
         """
         private_key = base64.b64decode(private_key)
-        txn = encoding.msgpack_encode(self)
+        txn = util.msgpack_encode(self)
         to_sign = constants.txid_prefix + base64.b64decode(txn)
         signing_key = SigningKey(private_key[:constants.key_len_bytes])
         signed = signing_key.sign(to_sign)
@@ -77,9 +76,9 @@ class Transaction:
         return sig
 
     def estimate_size(self):
-        sk, _ = account.generate_account()
+        sk, _ = util.generate_account()
         stx = self.sign(sk)
-        return len(base64.b64decode(encoding.msgpack_encode(stx)))
+        return len(base64.b64decode(util.msgpack_encode(stx)))
 
     def dictify(self):
         d = dict()
@@ -96,7 +95,7 @@ class Transaction:
             d["lx"] = self.lease
         if self.note:
             d["note"] = self.note
-        d["snd"] = encoding.decode_address(self.sender)
+        d["snd"] = util.decode_address(self.sender)
         d["type"] = self.type
 
         return d
@@ -104,7 +103,7 @@ class Transaction:
     @staticmethod
     def undictify(d):
         args = {
-            "sender": encoding.encode_address(d["snd"]),
+            "sender": util.encode_address(d["snd"]),
             "fee": d["fee"],
             "first": d["fv"] if "fv" in d else 0,
             "last": d["lv"],
@@ -204,20 +203,18 @@ class PaymentTxn(Transaction):
         if self.amt:
             d["amt"] = self.amt
         if self.close_remainder_to:
-            d["close"] = encoding.decode_address(self.close_remainder_to)
-        d["rcv"] = encoding.decode_address(self.receiver)
+            d["close"] = util.decode_address(self.close_remainder_to)
+        d["rcv"] = util.decode_address(self.receiver)
 
         d.update(super(PaymentTxn, self).dictify())
-        od = OrderedDict(sorted(d.items()))
-
-        return od
+        return d
 
     @staticmethod
     def _undictify(d):
         args = {
-            "close_remainder_to": encoding.encode_address(d["close"]) if "close" in d else None,
+            "close_remainder_to": util.encode_address(d["close"]) if "close" in d else None,
             "amt": d["amt"] if "amt" in d else 0,
-            "receiver": encoding.encode_address(d["rcv"])
+            "receiver": util.encode_address(d["rcv"])
         }
         return args
 
@@ -288,22 +285,20 @@ class KeyregTxn(Transaction):
 
     def dictify(self):
         d = {
-            "selkey": encoding.decode_address(self.selkey),
+            "selkey": util.decode_address(self.selkey),
             "votefst": self.votefst,
             "votekd": self.votekd,
-            "votekey": encoding.decode_address(self.votepk),
+            "votekey": util.decode_address(self.votepk),
             "votelst": self.votelst
         }
         d.update(super(KeyregTxn, self).dictify())
-        od = OrderedDict(sorted(d.items()))
-
-        return od
+        return d
 
     @staticmethod
     def _undictify(d):
         args = {
-            "votekey": encoding.encode_address(d["votekey"]),
-            "selkey": encoding.encode_address(d["selkey"]),
+            "votekey": util.encode_address(d["votekey"]),
+            "selkey": util.encode_address(d["selkey"]),
             "votefst": d["votefst"],
             "votelst": d["votelst"],
             "votekd": d["votekd"]
@@ -450,17 +445,17 @@ class AssetConfigTxn(Transaction):
             if self.url:
                 apar["au"] = self.url
             if self.clawback:
-                apar["c"] = encoding.decode_address(self.clawback)
+                apar["c"] = util.decode_address(self.clawback)
             if self.decimals:
                 apar["dc"] = self.decimals
             if self.default_frozen:
                 apar["df"] = self.default_frozen
             if self.freeze:
-                apar["f"] = encoding.decode_address(self.freeze)
+                apar["f"] = util.decode_address(self.freeze)
             if self.manager:
-                apar["m"] = encoding.decode_address(self.manager)
+                apar["m"] = util.decode_address(self.manager)
             if self.reserve:
-                apar["r"] = encoding.decode_address(self.reserve)
+                apar["r"] = util.decode_address(self.reserve)
             if self.total:
                 apar["t"] = self.total
             if self.unit_name:
@@ -471,9 +466,7 @@ class AssetConfigTxn(Transaction):
             d["caid"] = self.index
 
         d.update(super(AssetConfigTxn, self).dictify())
-        od = OrderedDict(sorted(d.items()))
-
-        return od
+        return d
 
     @staticmethod
     def _undictify(d):
@@ -502,13 +495,13 @@ class AssetConfigTxn(Transaction):
             if "an" in d["apar"]:
                 asset_name = d["apar"]["an"]
             if "m" in d["apar"]:
-                manager = encoding.encode_address(d["apar"]["m"])
+                manager = util.encode_address(d["apar"]["m"])
             if "r" in d["apar"]:
-                reserve = encoding.encode_address(d["apar"]["r"])
+                reserve = util.encode_address(d["apar"]["r"])
             if "f" in d["apar"]:
-                freeze = encoding.encode_address(d["apar"]["f"])
+                freeze = util.encode_address(d["apar"]["f"])
             if "c" in d["apar"]:
-                clawback = encoding.encode_address(d["apar"]["c"])
+                clawback = util.encode_address(d["apar"]["c"])
             if "au" in d["apar"]:
                 url = d["apar"]["au"]
             if "am" in d["apar"]:
@@ -609,21 +602,20 @@ class AssetFreezeTxn(Transaction):
         if self.new_freeze_state:
             d["afrz"] = self.new_freeze_state
 
-        d["fadd"] = encoding.decode_address(self.target)
+        d["fadd"] = util.decode_address(self.target)
 
         if self.index:
             d["faid"] = self.index
 
         d.update(super(AssetFreezeTxn, self).dictify())
-        od = OrderedDict(sorted(d.items()))
-        return od
+        return d
 
     @staticmethod
     def _undictify(d):
         args = {
             "index": d["faid"],
             "new_freeze_state": d["afrz"] if "afrz" in d else False,
-            "target": encoding.encode_address(d["fadd"])
+            "target": util.encode_address(d["fadd"])
         }
 
         return args
@@ -707,28 +699,25 @@ class AssetTransferTxn(Transaction):
         if self.amount:
             d["aamt"] = self.amount
         if self.close_assets_to:
-            d["aclose"] = encoding.decode_address(self.close_assets_to)
+            d["aclose"] = util.decode_address(self.close_assets_to)
         if self.receiver:
-            d["arcv"] = encoding.decode_address(self.receiver)
+            d["arcv"] = util.decode_address(self.receiver)
         if self.revocation_target:
-            d["asnd"] = encoding.decode_address(self.revocation_target)
-
+            d["asnd"] = util.decode_address(self.revocation_target)
         if self.index:
             d["xaid"] = self.index
 
         d.update(super(AssetTransferTxn, self).dictify())
-        od = OrderedDict(sorted(d.items()))
-
-        return od
+        return d
 
     @staticmethod
     def _undictify(d):
         args = {
-            "receiver": encoding.encode_address(d["arcv"]) if "arcv" in d else None,
+            "receiver": util.encode_address(d["arcv"]) if "arcv" in d else None,
             "amt": d["aamt"] if "aamt" in d else 0,
             "index": d["xaid"] if "xaid" in d else None,
-            "close_assets_to": encoding.encode_address(d["aclose"]) if "aclose" in d else None,
-            "revocation_target": encoding.encode_address(d["asnd"]) if "asnd" in d else None
+            "close_assets_to": util.encode_address(d["aclose"]) if "aclose" in d else None,
+            "revocation_target": util.encode_address(d["asnd"]) if "asnd" in d else None
         }
 
         return args
@@ -761,11 +750,11 @@ class SignedTransaction:
         self.transaction = transaction
 
     def dictify(self):
-        od = OrderedDict()
+        d = dict()
         if self.signature:
-            od["sig"] = base64.b64decode(self.signature)
-        od["txn"] = self.transaction.dictify()
-        return od
+            d["sig"] = base64.b64decode(self.signature)
+        d["txn"] = self.transaction.dictify()
+        return d
 
     @staticmethod
     def undictify(d):
@@ -830,11 +819,11 @@ class MultisigTransaction:
         self.multisig.subsigs[index].signature = sig
 
     def dictify(self):
-        od = OrderedDict()
+        d = dict()
         if self.multisig:
-            od["msig"] = self.multisig.dictify()
-        od["txn"] = self.transaction.dictify()
-        return od
+            d["msig"] = self.multisig.dictify()
+        d["txn"] = self.transaction.dictify()
+        return d
 
     @staticmethod
     def undictify(d):
@@ -909,7 +898,7 @@ class Multisig:
         self.threshold = threshold
         self.subsigs = []
         for a in addresses:
-            self.subsigs.append(MultisigSubsig(encoding.decode_address(a)))
+            self.subsigs.append(MultisigSubsig(util.decode_address(a)))
 
     def validate(self):
         """Check if the multisig account is valid."""
@@ -927,8 +916,8 @@ class Multisig:
                       bytes([self.version]) + bytes([self.threshold]))
         for s in self.subsigs:
             msig_bytes += s.public_key
-        addr = encoding.checksum(msig_bytes)
-        return encoding.encode_address(addr)
+        addr = util.checksum(msig_bytes)
+        return util.encode_address(addr)
 
     def verify(self, message):
         """Verify that the multisig is valid for the message."""
@@ -957,11 +946,11 @@ class Multisig:
         return True
 
     def dictify(self):
-        od = OrderedDict()
-        od["subsig"] = [subsig.dictify() for subsig in self.subsigs]
-        od["thr"] = self.threshold
-        od["v"] = self.version
-        return od
+        d = dict()
+        d["subsig"] = [subsig.dictify() for subsig in self.subsigs]
+        d["thr"] = self.threshold
+        d["v"] = self.version
+        return d
 
     def json_dictify(self):
         d = {
@@ -987,7 +976,7 @@ class Multisig:
 
     def get_public_keys(self):
         """Return the base32 encoded addresses for the multisig account."""
-        pks = [encoding.encode_address(s.public_key) for s in self.subsigs]
+        pks = [util.encode_address(s.public_key) for s in self.subsigs]
         return pks
 
     def __eq__(self, other):
@@ -1009,11 +998,11 @@ class MultisigSubsig:
         self.signature = signature
 
     def dictify(self):
-        od = OrderedDict()
-        od["pk"] = self.public_key
+        d = dict()
+        d["pk"] = self.public_key
         if self.signature:
-            od["s"] = self.signature
-        return od
+            d["s"] = self.signature
+        return d
 
     def json_dictify(self):
         d = {
@@ -1062,15 +1051,15 @@ class LogicSig:
         self.msig = None
 
     def dictify(self):
-        od = OrderedDict()
-        od["l"] = self.logic
+        d = dict()
+        d["l"] = self.logic
         if self.args:
-            od["arg"] = self.args
+            d["arg"] = self.args
         if self.sig:
-            od["sig"] = base64.b64decode(self.sig)
+            d["sig"] = base64.b64decode(self.sig)
         elif self.msig:
-            od["msig"] = self.msig.dictify()
-        return od
+            d["msig"] = self.msig.dictify()
+        return d
 
     @staticmethod
     def undictify(d):
@@ -1104,7 +1093,7 @@ class LogicSig:
         to_sign = constants.logic_prefix + self.logic
 
         if not self.sig and not self.msig:
-            checksum = encoding.checksum(to_sign)
+            checksum = util.checksum(to_sign)
             return checksum == public_key
 
         if self.sig:
@@ -1225,15 +1214,15 @@ class LogicSigTransaction:
                 the logic hash or the signature is valid against the sender\
                 address), false otherwise
         """
-        public_key = encoding.decode_address(self.transaction.sender)
+        public_key = util.decode_address(self.transaction.sender)
         return self.lsig.verify(public_key)
 
     def dictify(self):
-        od = OrderedDict()
+        d = dict()
         if self.lsig:
-            od["lsig"] = self.lsig.dictify()
-        od["txn"] = self.transaction.dictify()
-        return od
+            d["lsig"] = self.lsig.dictify()
+        d["txn"] = self.transaction.dictify()
+        return d
 
     @staticmethod
     def undictify(d):
@@ -1251,66 +1240,6 @@ class LogicSigTransaction:
                 self.transaction == other.transaction)
 
 
-def write_to_file(txns, path, overwrite=True):
-    """
-    Write signed or unsigned transactions to a file.
-
-    Args:
-        txns (Transaction[], SignedTransaction[], or MultisigTransaction[]):\
-            can be a mix of the three
-        path (str): file to write to
-        overwrite (bool): whether or not to overwrite what's already in the
-            file; if False, transactions will be appended to the file
-
-    Returns:
-        bool: true if the transactions have been written to the file
-    """
-
-    f = None
-    if overwrite:
-        f = open(path, "wb")
-    else:
-        f = open(path, "ab")
-
-    for txn in txns:
-        if isinstance(txn, Transaction):
-            enc = msgpack.packb({"txn": txn.dictify()}, use_bin_type=True)
-            f.write(enc)
-        else:
-            enc = msgpack.packb(txn.dictify(), use_bin_type=True)
-            f.write(enc)
-    f.close()
-    return True
-
-
-def retrieve_from_file(path):
-    """
-    Retrieve signed or unsigned transactions from a file.
-
-    Args:
-        path (str): file to read from
-
-    Returns:
-        Transaction[], SignedTransaction[], or MultisigTransaction[]:\
-            can be a mix of the three
-    """
-
-    f = open(path, "rb")
-    txns = []
-    unp = msgpack.Unpacker(f, raw=False)
-    for txn in unp:
-        if "msig" in txn:
-            txns.append(MultisigTransaction.undictify(txn))
-        elif "sig" in txn:
-            txns.append(SignedTransaction.undictify(txn))
-        elif "lsig" in txn:
-            txns.append(LogicSigTransaction.undictify(txn))
-        elif "type" in txn:
-            txns.append(Transaction.undictify(txn))
-    f.close()
-    return txns
-
-
 class TxGroup:
     def __init__(self, txns):
         assert isinstance(txns, list)
@@ -1325,9 +1254,9 @@ class TxGroup:
         self.transactions = txns
 
     def dictify(self):
-        od = OrderedDict()
-        od["txlist"] = self.transactions
-        return od
+        d = dict()
+        d["txlist"] = self.transactions
+        return d
 
     @staticmethod
     def undictify(d):
@@ -1349,15 +1278,15 @@ def calculate_group_id(txns):
         raise error.TransactionGroupSizeError
     txids = []
     for txn in txns:
-        raw_txn = encoding.msgpack_encode(txn)
+        raw_txn = util.msgpack_encode(txn)
         to_hash = constants.txid_prefix + base64.b64decode(raw_txn)
-        txids.append(encoding.checksum(to_hash))
+        txids.append(util.checksum(to_hash))
 
     group = TxGroup(txids)
 
-    encoded = encoding.msgpack_encode(group)
+    encoded = util.msgpack_encode(group)
     to_sign = constants.tgid_prefix + base64.b64decode(encoded)
-    gid = encoding.checksum(to_sign)
+    gid = util.checksum(to_sign)
     return gid
 
 

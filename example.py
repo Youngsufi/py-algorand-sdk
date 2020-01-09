@@ -1,15 +1,14 @@
-from algosdk import encoding
 from algosdk import transaction
 from algosdk import kmd
 from algosdk import algod
-from algosdk import account
+from algosdk import util
 from algosdk import mnemonic
-import params
+import node_params
 import json
 
 # create kmd and algod clients
-kcl = kmd.KMDClient(params.kmd_token, params.kmd_address)
-acl = algod.AlgodClient(params.algod_token, params.algod_address)
+kcl = kmd.KMDClient(node_params.kmd_token, node_params.kmd_address)
+acl = algod.AlgodClient(node_params.algod_token, node_params.algod_address)
 
 # enter existing wallet and account info here
 existing_wallet_name = input("Name of an existing wallet? ")
@@ -62,7 +61,7 @@ handle = kcl.init_wallet_handle(wallet_id, wallet_pswd)
 print("Wallet handle token: " + handle + "\n")
 
 # generate account with account and check if it's valid
-private_key_1, address_1 = account.generate_account()
+private_key_1, address_1 = util.generate_account()
 print("Private key: " + private_key_1 + "\n")
 print("First account: " + address_1)
 
@@ -92,7 +91,7 @@ print("Block", last_round, "info:", json.dumps(block_info, indent=2), "\n")
 amount = 100000
 txn = transaction.PaymentTxn(existing_account, fee, last_round,
                              last_round+100, gh, address_1, amount, gen=gen)
-print("Encoded transaction:", encoding.msgpack_encode(txn), "\n")
+print("Encoded transaction:", util.msgpack_encode(txn), "\n")
 
 # sign transaction with kmd
 signed_with_kmd = kcl.sign_transaction(existing_handle,

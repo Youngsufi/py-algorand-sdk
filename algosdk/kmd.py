@@ -3,7 +3,7 @@ from urllib import parse
 import urllib.error
 import json
 import base64
-from . import encoding
+from . import util
 from . import error
 from . import transaction
 from . import constants
@@ -320,7 +320,7 @@ class KMDClient:
         Returns:
             SignedTransaction: signed transaction with signature of sender
         """
-        txn = encoding.msgpack_encode(txn)
+        txn = util.msgpack_encode(txn)
         req = "/transaction/sign"
         query = {
             "wallet_handle_token": handle,
@@ -329,7 +329,7 @@ class KMDClient:
             }
         result = self.kmd_request("POST", req, data=query)
         result = result["signed_transaction"]
-        return encoding.msgpack_decode(result)
+        return util.msgpack_decode(result)
 
     def list_multisig(self, handle):
         """
@@ -389,7 +389,7 @@ class KMDClient:
             }
         result = self.kmd_request("POST", req, data=query)
         pks = result["pks"]
-        pks = [encoding.encode_address(base64.b64decode(p)) for p in pks]
+        pks = [util.encode_address(base64.b64decode(p)) for p in pks]
         msig = transaction.Multisig(result["multisig_version"],
                                     result["threshold"], pks)
         return msig
@@ -430,8 +430,8 @@ class KMDClient:
             MultisigTransaction: multisig transaction with added signature
         """
         partial = mtx.multisig.json_dictify()
-        txn = encoding.msgpack_encode(mtx.transaction)
-        public_key = base64.b64encode(encoding.decode_address(public_key))
+        txn = util.msgpack_encode(mtx.transaction)
+        public_key = base64.b64encode(util.decode_address(public_key))
         public_key = public_key.decode()
         req = "/multisig/sign"
         query = {
@@ -442,6 +442,6 @@ class KMDClient:
             "partial_multisig": partial
             }
         result = self.kmd_request("POST", req, data=query)["multisig"]
-        msig = encoding.msgpack_decode(result)
+        msig = util.msgpack_decode(result)
         mtx.multisig = msig
         return mtx

@@ -1,6 +1,6 @@
 import math
 import random
-from . import error, encoding, constants, transaction, logic, account
+from . import error, constants, transaction, logic, util
 import base64
 
 
@@ -239,11 +239,11 @@ class LimitOrder(Template):
         """
         txn_1 = transaction.PaymentTxn(self.get_address(), fee,
                                        first_valid, last_valid, gh,
-                                       account.address_from_private_key(
+                                       util.public_key_from_private_key(
                                        private_key), int(
                                            amount/self.ratn*self.ratd))
 
-        txn_2 = transaction.AssetTransferTxn(account.address_from_private_key(
+        txn_2 = transaction.AssetTransferTxn(util.public_key_from_private_key(
                                              private_key), fee,
                                              first_valid, last_valid, gh,
                                              self.owner, amount,
@@ -290,7 +290,7 @@ def inject(orig, offsets, values, values_types):
             res = replace(res, val, offsets[i], 1)
 
         elif val_type == "address":
-            val = encoding.decode_address(val)
+            val = util.decode_address(val)
             res = replace(res, val, offsets[i], 32)
 
         elif val_type == "base64":

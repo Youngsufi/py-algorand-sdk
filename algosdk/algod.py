@@ -4,7 +4,7 @@ import urllib.error
 import json
 import base64
 from . import error
-from . import encoding
+from . import util
 from . import constants
 
 
@@ -253,7 +253,7 @@ class AlgodClient:
         Returns:
             str: transaction ID
         """
-        return self.send_raw_transaction(encoding.msgpack_encode(txn),
+        return self.send_raw_transaction(util.msgpack_encode(txn),
                                          **kwargs)
 
     def send_transactions(self, txns, **kwargs):
@@ -270,7 +270,7 @@ class AlgodClient:
         """
         serialized = []
         for txn in txns:
-            serialized.append(base64.b64decode(encoding.msgpack_encode(txn)))
+            serialized.append(base64.b64decode(util.msgpack_encode(txn)))
 
         return self.send_raw_transaction(base64.b64encode(
                                          b''.join(serialized)), **kwargs)

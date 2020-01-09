@@ -14,15 +14,15 @@ Alternatively, choose a [distribution file](https://pypi.org/project/py-algorand
 Here's a simple example you can run without a node.
 
 ```python
-from algosdk import account, encoding
+from algosdk import util
 
 # generate an account
-private_key, address = account.generate_account()
+private_key, address = util.generate_account()
 print("Private key:", private_key)
 print("Address:", address)
 
 # check if the address is valid
-if encoding.is_valid_address(address):
+if util.is_valid_address(address):
     print("The address is valid!")
 else:
     print("The address is invalid.")
@@ -151,28 +151,28 @@ txn = transaction.PaymentTxn(sender, fee, last_round, last_round+100, gh, receiv
 
 # write to file
 txns = [txn]
-transaction.write_to_file([txn], "pathtofile.tx")
+util.write_to_file([txn], "pathtofile.tx")
 ```
 
 We can also read transactions after writing them to file.
 
 ```python
 # read from file
-read_txns = transaction.retrieve_from_file("pathtofile.tx")
+read_txns = util.read_from_file("pathtofile.tx")
 ```
 
 ### manipulating multisig transactions
 
 ```python
 import params
-from algosdk import account, transaction, algod, encoding
+from algosdk import util, transaction, algod
 
 acl = algod.AlgodClient(params.algod_token, params.algod_address)
 
 # generate three accounts
-private_key_1, account_1 = account.generate_account()
-private_key_2, account_2 = account.generate_account()
-private_key_3, account_3 = account.generate_account()
+private_key_1, account_1 = util.generate_account()
+private_key_2, account_2 = util.generate_account()
+private_key_3, account_3 = util.generate_account()
 
 # create a multisig account
 version = 1  # multisig version
@@ -199,14 +199,14 @@ mtx.sign(private_key_1)
 mtx.sign(private_key_2)
 
 # print encoded transaction
-print(encoding.msgpack_encode(mtx))
+print(util.msgpack_encode(mtx))
 ```
 
 ### working with NoteField
 We can put things in the "note" field of a transaction; here's an example with an auction bid. Note that you can put any bytes you want in the "note" field; you don't have to use the NoteField object.
 
 ```python
-from algosdk import algod, mnemonic, transaction, account
+from algosdk import algod, mnemonic, transaction, util
 
 passphrase = "teach chat health avocado broken avocado trick adapt parade witness damp gift behave harbor maze truth figure below scatter taste slow sustain aspect absorb nuclear"
 
@@ -228,7 +228,7 @@ note = "Some Text".encode()
 receiver = "receiver Algorand Address"
 
 # create the transaction
-txn = transaction.PaymentTxn(account.address_from_private_key(sk), fee, last_round, last_round+1000, gh, receiver, amount, note=note)
+txn = transaction.PaymentTxn(util.public_key_from_private_key(sk), fee, last_round, last_round+1000, gh, receiver, amount, note=note)
 
 # sign it
 stx = txn.sign(sk)
@@ -240,7 +240,7 @@ txid = acl.send_transaction(stx)
 We can also get the NoteField object back from its bytes:
 ```python
 # decode notefield
-decoded = encoding.msgpack_decode(base64.b64encode(note_field_bytes))
+decoded = util.msgpack_decode(base64.b64encode(note_field_bytes))
 print(decoded.dictify())
 ```
 
@@ -249,8 +249,8 @@ print(decoded.dictify())
 import params
 from algosdk import algod, kmd, transaction
 
-private_key_sender, sender = account.generate_account()
-private_key_receiver, receiver = account.generate_account()
+private_key_sender, sender = util.generate_account()
+private_key_receiver, receiver = util.generate_account()
 
 # create an algod and kmd client
 acl = algod.AlgodClient(params.algod_token, params.algod_address)
@@ -320,13 +320,13 @@ acl.send_transaction(lstx)
 Assets can be managed by sending three types of transactions: AssetConfigTxn, AssetFreezeTxn, and AssetTransferTxn. Shown below are examples of how to use these transactions.
 #### creating an asset
 ```python
-from algosdk import account, transaction
+from algosdk import util, transaction
 
-private_key, address = account.generate_account() # creator
-_, freeze = account.generate_account() # account that can freeze other accounts for this asset
-_, manager = account.generate_account() # account able to update asset configuration
-_, clawback = account.generate_account() # account allowed to take this asset from any other account
-_, reserve = account.generate_account() # account that holds reserves for this asset
+private_key, address = util.generate_account() # creator
+_, freeze = util.generate_account() # account that can freeze other accounts for this asset
+_, manager = util.generate_account() # account able to update asset configuration
+_, clawback = util.generate_account() # account allowed to take this asset from any other account
+_, reserve = util.generate_account() # account that holds reserves for this asset
 
 fee_per_byte = 10
 first_valid_round = 1000
@@ -353,14 +353,14 @@ signed_txn = txn.sign(private_key)
 #### updating asset configuration
 This transaction must be sent from the manager's account.
 ```python
-from algosdk import account, transaction
+from algosdk import util, transaction
 
 manager_private_key = "manager private key"
 manager_address = "manager address"
-_, new_freeze = account.generate_account() # account that can freeze other accounts for this asset
-_, new_manager = account.generate_account() # account able to update asset configuration
-_, new_clawback = account.generate_account() # account allowed to take this asset from any other account
-_, new_reserve = account.generate_account() # account that holds reserves for this asset
+_, new_freeze = util.generate_account() # account that can freeze other accounts for this asset
+_, new_manager = util.generate_account() # account able to update asset configuration
+_, new_clawback = util.generate_account() # account allowed to take this asset from any other account
+_, new_reserve = util.generate_account() # account that holds reserves for this asset
 
 fee_per_byte = 10
 first_valid_round = 1000
@@ -381,7 +381,7 @@ signed_txn = txn.sign(manager_private_key)
 #### destroying an asset
 This transaction must be sent from the creator's account.
 ```python
-from algosdk import account, transaction
+from algosdk import util, transaction
 
 creator_private_key = "creator private key"
 creator_address = "creator address"
@@ -403,7 +403,7 @@ signed_txn = txn.sign(creator_private_key)
 #### freezing or unfreezing an account
 This transaction must be sent from the account specified as the freeze manager for the asset.
 ```python
-from algosdk import account, transaction
+from algosdk import util, transaction
 
 freeze_private_key = "freeze private key"
 freeze_address = "freeze address"
@@ -427,7 +427,7 @@ signed_txn = txn.sign(freeze_private_key)
 
 #### sending assets
 ```python
-from algosdk import account, transaction
+from algosdk import util, transaction
 
 sender_private_key = "freeze private key"
 sender_address = "freeze address"
@@ -453,7 +453,7 @@ signed_txn = txn.sign(sender_private_key)
 
 #### accepting assets
 ```python
-from algosdk import account, transaction
+from algosdk import util, transaction
 
 private_key = "freeze private key"
 address = "freeze address"
@@ -479,7 +479,7 @@ signed_txn = txn.sign(private_key)
 #### revoking assets
 This transaction must be sent by the asset's clawback manager.
 ```python
-from algosdk import account, transaction
+from algosdk import util, transaction
 
 clawback_private_key = "clawback private key"
 clawback_address = "clawback address"
@@ -501,6 +501,42 @@ txn = transaction.AssetTransferTxn(clawback_address, fee_per_byte,
 
 # sign the transaction
 signed_txn = txn.sign(clawback_private_key)
+```
+
+### using custom headers
+For example, if the API is expecting the key "X-API-Key" instead of the
+default "X-Algo-API-Token". This is done by using a dict with our custom
+key, instead of a string, as the token.
+
+```python
+from algosdk import algod
+
+algod_address = "https://......"
+algod_token = ""
+headers = {
+   "X-API-Key": "#######",
+}
+
+algod_client = algod.AlgodClient(algod_token, algod_address, headers)
+
+try:
+    status = algod_client.status()
+except Exception as e:
+    print("Failed to get algod status: {}".format(e))
+
+if status:
+    print("algod last round: {}".format(status.get("lastRound")))
+    print("algod time since last round: {}".format(
+            status.get("timeSinceLastRound")))
+    print("algod catchup: {}".format(status.get("catchupTime")))
+    print("algod latest version: {}".format(
+            status.get("lastConsensusVersion")))
+
+# Retrieve latest block information
+last_round = algod_client.status().get("lastRound")
+print("####################")
+block = algod_client.block_info(last_round)
+print(block)
 ```
 
 ## Documentation
