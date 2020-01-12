@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import base64
 from . import util, constants
 from nacl.signing import SigningKey
@@ -34,14 +33,15 @@ class Bid:
         self.auction_id = auction_id
 
     def dictify(self):
-        od = OrderedDict()
-        od["aid"] = self.auction_id
-        od["auc"] = util.decode_address(self.auction_key)
-        od["bidder"] = util.decode_address(self.bidder)
-        od["cur"] = self.bid_currency
-        od["id"] = self.bid_id
-        od["price"] = self.max_price
-        return od
+        d = {
+            "aid": self.auction_id,
+            "auc": util.decode_address(self.auction_key),
+            "bidder": util.decode_address(self.bidder),
+            "cur": self.bid_currency,
+            "id": self.bid_id,
+            "price": self.max_price
+        }
+        return d
 
     def sign(self, private_key):
         """
@@ -64,7 +64,8 @@ class Bid:
 
     @staticmethod
     def undictify(d):
-        return Bid(util.encode_address(d["bidder"]), d["cur"], d["price"], d["id"], util.encode_address(d["auc"]), d["aid"])
+        return Bid(util.encode_address(d["bidder"]), d["cur"], d["price"],
+                   d["id"], util.encode_address(d["auc"]), d["aid"])
 
     def __eq__(self, other):
         if not isinstance(other, Bid):
@@ -94,10 +95,11 @@ class SignedBid:
         self.signature = signature
 
     def dictify(self):
-        od = OrderedDict()
-        od["bid"] = self.bid.dictify()
-        od["sig"] = base64.b64decode(self.signature)
-        return od
+        d = {
+            "bid": self.bid.dictify(),
+            "sig": base64.b64decode(self.signature)
+        }
+        return d
 
     @staticmethod
     def undictify(d):
@@ -129,10 +131,11 @@ class NoteField:
         self.note_field_type = note_field_type
 
     def dictify(self):
-        od = OrderedDict()
-        od["b"] = self.signed_bid.dictify()
-        od["t"] = self.note_field_type
-        return od
+        d = {
+            "b": self.signed_bid.dictify(),
+            "t": self.note_field_type
+        }
+        return d
 
     @staticmethod
     def undictify(d):

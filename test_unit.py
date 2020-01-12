@@ -137,8 +137,8 @@ class TestTransaction(unittest.TestCase):
         first_round = 322575
         last_round = 323575
         gh = "SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI="
-        votepk = util.encode_address(base64.b64decode("Kv7QI7chi1y6axoy+t7wzAVpePqRq/rkjzWh/RMYyLo="))
-        selpk = util.encode_address(base64.b64decode("bPgrv4YogPcdaUAxrt1QysYZTVyRAuUMD4zQmCu9llc="))
+        votepk = "Kv7QI7chi1y6axoy+t7wzAVpePqRq/rkjzWh/RMYyLo="
+        selpk = "bPgrv4YogPcdaUAxrt1QysYZTVyRAuUMD4zQmCu9llc="
         votefirst = 10000
         votelast = 10111
         votedilution = 11
@@ -485,7 +485,7 @@ class TestMultisig(unittest.TestCase):
 
         # get random private key
         private_key_1, account_1 = util.generate_account()
-        private_key_2, account_2 = util.generate_account()
+        _, account_2 = util.generate_account()
         private_key_3, account_3 = util.generate_account()
 
         # create transaction
@@ -825,8 +825,7 @@ class TestTemplate(unittest.TestCase):
         addr1 = "WO3QIJ6T4DZHBX5PWJH26JLHFSRT7W7M2DJOULPXDTUS6TUX7ZRIO4KDFY"
         addr2 = "W6UUUSEAOGLBHT7VFT4H2SDATKKSG6ZBUIJXTZMSLW36YS44FRP5NVAU7U"
         addr3 = "XCIBIN7RT4ZXGBMVAMU3QS6L5EKB7XGROC5EPCNHHYXUIBAA5Q6C5Y7NEU"
-        s = template.Split(addr1, addr2, addr3, 30, 100, 123456,
-                           10000, 5000000)
+        s = template.Split(addr1, addr2, addr3, 30, 100, 123456, 10000, 5000000)
         golden = "ASAIAcCWsQICAMDEBx5kkE4mAyCztwQn0+DycN+vsk+vJWcsoz/b7NDS6i33HOkvTpf+YiC3qUpIgHGWE8/1LPh9SGCalSN7IaITeeWSXbfsS5wsXyC4kBQ38Z8zcwWVAym4S8vpFB/c0XC6R4mnPi9EBADsPDEQIhIxASMMEDIEJBJAABkxCSgSMQcyAxIQMQglEhAxAiEEDRAiQAAuMwAAMwEAEjEJMgMSEDMABykSEDMBByoSEDMACCEFCzMBCCEGCxIQMwAIIQcPEBA="
         golden_addr = "KPYGWKTV7CKMPMTLQRNGMEQRSYTYDHUOFNV4UDSBDLC44CLIJPQWRTCPBU"
         self.assertEqual(s.get_program(), base64.b64decode(golden))
@@ -854,7 +853,7 @@ class TestTemplate(unittest.TestCase):
         p = s.get_program()
         self.assertEqual(p, base64.b64decode(golden))
         self.assertEqual(s.get_address(), golden_addr)
-        sk, pk = util.generate_account()
+        sk, _ = util.generate_account()
         s.get_swap_assets_transactions(1000, p, sk, 1234, 2234, "f4OxZX/x/FO5LcGBSKHWXfwtSx+j1ncoSt3SABJtkGk=", 10)
 
 

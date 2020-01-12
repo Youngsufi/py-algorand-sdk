@@ -1,6 +1,4 @@
 import base64
-import msgpack
-from collections import OrderedDict
 from . import constants
 from . import error
 from . import logic
@@ -237,8 +235,8 @@ class KeyregTxn(Transaction):
         first (int): first round for which the transaction is valid
         last (int): last round for which the transaction is valid
         gh (str): genesis_hash
-        votekey (str): participation public key
-        selkey (str): VRF public key
+        votekey (str): participation public key in base64
+        selkey (str): VRF public key in base64
         votefst (int): first round to vote
         votelst (int): last round to vote
         votekd (int): vote key dilution
@@ -285,10 +283,10 @@ class KeyregTxn(Transaction):
 
     def dictify(self):
         d = {
-            "selkey": util.decode_address(self.selkey),
+            "selkey": base64.b64decode(self.selkey),
             "votefst": self.votefst,
             "votekd": self.votekd,
-            "votekey": util.decode_address(self.votepk),
+            "votekey": base64.b64decode(self.votepk),
             "votelst": self.votelst
         }
         d.update(super(KeyregTxn, self).dictify())
@@ -297,8 +295,8 @@ class KeyregTxn(Transaction):
     @staticmethod
     def _undictify(d):
         args = {
-            "votekey": util.encode_address(d["votekey"]),
-            "selkey": util.encode_address(d["selkey"]),
+            "votekey": base64.b64encode(d["votekey"]).decode(),
+            "selkey": base64.b64encode(d["selkey"]).decode(),
             "votefst": d["votefst"],
             "votelst": d["votelst"],
             "votekd": d["votekd"]
@@ -437,7 +435,7 @@ class AssetConfigTxn(Transaction):
         if (self.total or self.default_frozen or self.unit_name or
                 self.asset_name or self.manager or self.reserve or
                 self.freeze or self.clawback or self.decimals):
-            apar = OrderedDict()
+            apar = dict()
             if self.metadata_hash:
                 apar["am"] = self.metadata_hash
             if self.asset_name:
