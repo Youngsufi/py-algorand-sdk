@@ -103,11 +103,12 @@ class Split(Template):
             amt_1 = round(amount / ratd * ratn)
             amt_2 = amount - amt_1
 
-        txn_1 = transaction.PaymentTxn(self.get_address(), self.max_fee,
-                                       first_valid, last_valid, gh,
+        params = {"fee": self.max_fee, "genesishashb64": gh}
+        txn_1 = transaction.PaymentTxn(self.get_address(), params,
+                                       first_valid, last_valid,
                                        self.receiver_1, amt_1)
-        txn_2 = transaction.PaymentTxn(self.get_address(), self.max_fee,
-                                       first_valid, last_valid, gh,
+        txn_2 = transaction.PaymentTxn(self.get_address(), params,
+                                       first_valid, last_valid,
                                        self.receiver_2, amt_2)
 
         transaction.assign_group_id([txn_1, txn_2])
@@ -239,9 +240,10 @@ class DynamicFee(Template):
 
         # reimbursement transaction
         address = util.public_key_from_private_key(private_key)
-        txn_2 = transaction.PaymentTxn(address, fee, txn.first_valid_round,
-                                       txn.last_valid_round, txn.genesis_hash,
-                                       txn.sender, txn.fee, lease=txn.lease)
+        params = {"fee": fee, "genesishashb64": txn.genesis_hash}
+        txn_2 = transaction.PaymentTxn(address, params, txn.first_valid_round,
+                                       txn.last_valid_round, txn.sender, txn.fee,
+                                       lease=txn.lease)
 
         transaction.assign_group_id([txn, txn_2])
 
@@ -266,8 +268,9 @@ class DynamicFee(Template):
         # main transaction
         close = None if self.close_remainder_address == bytes(
             constants.address_len) else self.close_remainder_address
-        txn = transaction.PaymentTxn(sender, 0, self.first_valid,
-                                     self.last_valid, gh, self.receiver,
+        params = {"fee": 0, "genesishashb64": gh}
+        txn = transaction.PaymentTxn(sender, params, self.first_valid,
+                                     self.last_valid, self.receiver,
                                      self.amount, lease=self.lease_value,
                                      close_remainder_to=close)
         lsig = transaction.LogicSig(self.get_program())
@@ -346,9 +349,10 @@ class PeriodicPayment(Template):
 
         if first_valid % period != 0:
             raise error.PeriodicPaymentDivisibilityError
-        txn = transaction.PaymentTxn(address, fee,
+        params = {"fee": fee, "genesishashb64": gh}
+        txn = transaction.PaymentTxn(address, params,
                                      first_valid, first_valid +
-                                     withdrawing_window, gh,
+                                     withdrawing_window,
                                      receiver, amount,
                                      lease=lease_value)
 
@@ -442,15 +446,17 @@ class LimitOrder(Template):
                                       "microalgos must be at least " +
                                       str(ratn) + " / " + str(ratd))
 
-        txn_1 = transaction.PaymentTxn(address, fee,
-                                       first_valid, last_valid, gh,
+        params = {"fee": fee, "genesishashb64": gh}
+
+        txn_1 = transaction.PaymentTxn(address, params,
+                                       first_valid, last_valid,
                                        util.public_key_from_private_key(
                                        private_key), int(
                                            microalgo_amount))
 
         txn_2 = transaction.AssetTransferTxn(util.public_key_from_private_key(
-                                             private_key), fee,
-                                             first_valid, last_valid, gh,
+                                             private_key), params,
+                                             first_valid, last_valid,
                                              owner, asset_amount,
                                              asset_id)
 

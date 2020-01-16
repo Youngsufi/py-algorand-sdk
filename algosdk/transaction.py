@@ -11,15 +11,15 @@ class Transaction:
     """
     Superclass for various transaction types.
     """
-    def __init__(self, sender, fee, first, last, note, gen, gh, lease,
+    def __init__(self, sender, params, first, last, note, fee, gen, gh, lease,
                  txn_type):
         self.sender = sender
-        self.fee = fee
+        self.fee = params["fee"] if fee == None else fee
         self.first_valid_round = first
         self.last_valid_round = last
         self.note = note
         self.genesis_id = gen
-        self.genesis_hash = gh
+        self.genesis_hash = params["genesishashb64"] if gh == None else gh
         self.group = None
         self.lease = lease
         if self.lease is not None:
@@ -102,10 +102,9 @@ class Transaction:
     def undictify(d):
         args = {
             "sender": util.encode_address(d["snd"]),
-            "fee": d["fee"],
             "first": d["fv"] if "fv" in d else 0,
             "last": d["lv"],
-            "gh": base64.b64encode(d["gh"]).decode(),
+            "params": {"fee": d["fee"], "genesishashb64": base64.b64encode(d["gh"]).decode()},
             "note": d["note"] if "note" in d else None,
             "gen": d["gen"] if "gen" in d else None,
             "flat_fee": True,
@@ -151,16 +150,18 @@ class PaymentTxn(Transaction):
 
     Args:
         sender (str): address of the sender
-        fee (int): transaction fee (per byte if flat_fee is false)
+        params (dict): transaction parameters from algod
         first (int): first round for which the transaction is valid
         last (int): last round for which the transaction is valid
-        gh (str): genesis_hash
         receiver (str): address of the receiver
         amt (int): amount in microAlgos to be sent
         close_remainder_to (str, optional): if nonempty, account will be closed
             and remaining algos will be sent to this address
         note (bytes, optional): arbitrary optional bytes
+        fee (int, optional): fee per byte unless flat_fee is set to True;
+            overrides suggested fee in params
         gen (str, optional): genesis_id
+        gh (str, optional): genesis hash; overrides genesis hash in params
         flat_fee (bool, optional): whether the specified fee is a flat fee
         lease (byte[32], optional): specifies a lease, and no other transaction
             with the same sender and lease can be confirmed in this
@@ -182,11 +183,11 @@ class PaymentTxn(Transaction):
         lease (byte[32])
     """
 
-    def __init__(self, sender, fee, first, last, gh, receiver, amt,
-                 close_remainder_to=None, note=None, gen=None, flat_fee=False,
-                 lease=None):
-        Transaction.__init__(self,  sender, fee, first, last, note, gen, gh,
-                             lease, constants.payment_txn)
+    def __init__(self, sender, params,first, last, receiver, amt,
+                 close_remainder_to=None, note=None, fee=None, gen=None,
+                 gh=None, flat_fee=False, lease=None):
+        Transaction.__init__(self, sender, params, first, last, note, fee,
+                             gen, gh, lease, constants.payment_txn)
         self.receiver = receiver
         self.amt = amt
         self.close_remainder_to = close_remainder_to
@@ -195,6 +196,7 @@ class PaymentTxn(Transaction):
         else:
             self.fee = max(self.estimate_size()*self.fee,
                            constants.min_txn_fee)
+
 
     def dictify(self):
         d = dict()
@@ -231,17 +233,19 @@ class KeyregTxn(Transaction):
 
     Args:
         sender (str): address of sender
-        fee (int): transaction fee (per byte if flat_fee is false)
+        params (dict): transaction parameters from algod
         first (int): first round for which the transaction is valid
         last (int): last round for which the transaction is valid
-        gh (str): genesis_hash
         votekey (str): participation public key in base64
         selkey (str): VRF public key in base64
         votefst (int): first round to vote
         votelst (int): last round to vote
         votekd (int): vote key dilution
         note (bytes, optional): arbitrary optional bytes
+        fee (int, optional): fee per byte unless flat_fee is set to True;
+            overrides suggested fee in params
         gen (str, optional): genesis_id
+        gh (str, optional): genesis hash; overrides genesis hash in params
         flat_fee (bool, optional): whether the specified fee is a flat fee
         lease (byte[32], optional): specifies a lease, and no other transaction
             with the same sender and lease can be confirmed in this
@@ -265,10 +269,10 @@ class KeyregTxn(Transaction):
         lease (byte[32])
     """
 
-    def __init__(self, sender, fee, first, last, gh, votekey, selkey, votefst,
-                 votelst, votekd, note=None, gen=None, flat_fee=False,
-                 lease=None):
-        Transaction.__init__(self, sender, fee, first, last, note, gen, gh,
+    def __init__(self, sender, params, first, last, votekey, selkey, votefst,
+                 votelst, votekd, note=None, fee=None, gen=None, gh=None,
+                 flat_fee=False, lease=None):
+        Transaction.__init__(self, sender, params, first, last, note, fee, gen, gh,
                              lease, constants.keyreg_txn)
         self.votepk = votekey
         self.selkey = selkey
@@ -333,10 +337,8 @@ class AssetConfigTxn(Transaction):
 
     Args:
         sender (str): address of the sender
-        fee (int): transaction fee (per byte if flat_fee is false)
         first (int): first round for which the transaction is valid
         last (int): last round for which the transaction is valid
-        gh (str): genesis_hash
         index (int, optional): index of the asset
         total (int, optional): total number of base units of this asset created
         default_frozen (bool, optional): whether slots for this asset in user
@@ -356,7 +358,10 @@ class AssetConfigTxn(Transaction):
         metadata_hash (byte[32], optional): a commitment to some unspecified
             asset metadata (32 byte hash)
         note (bytes, optional): arbitrary optional bytes
+        fee (int, optional): fee per byte unless flat_fee is set to True;
+            overrides suggested fee in params
         gen (str, optional): genesis_id
+        gh (str, optional): genesis hash; overrides genesis hash in params
         flat_fee (bool, optional): whether the specified fee is a flat fee
         lease (byte[32], optional): specifies a lease, and no other transaction
             with the same sender and lease can be confirmed in this
@@ -395,14 +400,14 @@ class AssetConfigTxn(Transaction):
         decimals (int)
     """
 
-    def __init__(self, sender, fee, first, last, gh, index=None,
+    def __init__(self, sender, params, first, last, index=None,
                  total=None, default_frozen=None, unit_name=None,
                  asset_name=None, manager=None, reserve=None,
                  freeze=None, clawback=None, url=None, metadata_hash=None,
-                 note=None, gen=None, flat_fee=False, lease=None,
-                 strict_empty_address_check=True, decimals=0):
-        Transaction.__init__(self,  sender, fee, first, last, note, gen, gh,
-                             lease, constants.assetconfig_txn)
+                 note=None, fee=None, gen=None, gh=None, flat_fee=False,
+                 lease=None, strict_empty_address_check=True, decimals=0):
+        Transaction.__init__(self, sender, params, first, last, note, fee,
+                             gen, gh, lease, constants.assetconfig_txn)
         if strict_empty_address_check:
             if not (manager and reserve and freeze and clawback):
                 raise error.EmptyAddressError
@@ -551,16 +556,17 @@ class AssetFreezeTxn(Transaction):
     Args:
         sender (str): address of the sender, who must be the asset's freeze
             manager
-        fee (int): transaction fee (per byte if flat_fee is false)
         first (int): first round for which the transaction is valid
         last (int): last round for which the transaction is valid
-        gh (str): genesis_hash
         index (int): index of the asset
         target (str): address having its assets frozen or unfrozen
         new_freeze_state (bool): true if the assets should be frozen, false if
             they should be transferrable
         note (bytes, optional): arbitrary optional bytes
+        fee (int, optional): fee per byte unless flat_fee is set to True;
+            overrides suggested fee in params
         gen (str, optional): genesis_id
+        gh (str, optional): genesis hash; overrides genesis hash in params
         flat_fee (bool, optional): whether the specified fee is a flat fee
         lease (byte[32], optional): specifies a lease, and no other transaction
             with the same sender and lease can be confirmed in this
@@ -581,11 +587,11 @@ class AssetFreezeTxn(Transaction):
         lease (byte[32])
     """
 
-    def __init__(self, sender, fee, first, last, gh, index, target,
-                 new_freeze_state, note=None, gen=None, flat_fee=False,
-                 lease=None):
-        Transaction.__init__(self, sender, fee, first, last, note, gen, gh,
-                             lease, constants.assetfreeze_txn)
+    def __init__(self, sender, params, first, last, index, target,
+                 new_freeze_state, note=None, fee=None, gen=None,
+                 gh=None, flat_fee=False, lease=None):
+        Transaction.__init__(self, sender, params, first, last, note, fee,
+                             gen, gh, lease, constants.assetfreeze_txn)
         self.index = index
         self.target = target
         self.new_freeze_state = new_freeze_state
@@ -639,10 +645,8 @@ class AssetTransferTxn(Transaction):
 
     Args:
         sender (str): address of the sender
-        fee (int): transaction fee (per byte if flat_fee is false)
         first (int): first round for which the transaction is valid
         last (int): last round for which the transaction is valid
-        gh (str): genesis_hash
         receiver (str): address of the receiver
         amt (int): amount of asset base units to send
         index (int): index of the asset
@@ -652,7 +656,10 @@ class AssetTransferTxn(Transaction):
             rather than the sender's address (can only be used by an asset's
             revocation manager, also known as clawback)
         note (bytes, optional): arbitrary optional bytes
+        fee (int, optional): fee per byte unless flat_fee is set to True;
+            overrides suggested fee in params
         gen (str, optional): genesis_id
+        gh (str, optional): genesis hash; overrides genesis hash in params
         flat_fee (bool, optional): whether the specified fee is a flat fee
         lease (byte[32], optional): specifies a lease, and no other transaction
             with the same sender and lease can be confirmed in this
@@ -675,11 +682,11 @@ class AssetTransferTxn(Transaction):
         lease (byte[32])
     """
 
-    def __init__(self, sender, fee, first, last, gh, receiver, amt, index,
+    def __init__(self, sender, params, first, last, receiver, amt, index,
                  close_assets_to=None, revocation_target=None, note=None,
-                 gen=None, flat_fee=False, lease=None):
-        Transaction.__init__(self,  sender, fee, first, last, note, gen, gh,
-                             lease, constants.assettransfer_txn)
+                 fee=None, gen=None, gh=None, flat_fee=False, lease=None):
+        Transaction.__init__(self, sender, params, first, last, note, fee,
+                             gen, gh, lease, constants.assettransfer_txn)
         self.receiver = receiver
         self.amount = amt
         self.index = index

@@ -1,10 +1,19 @@
 # Changelog
-# 1.1.1
-# Added
+
+## 2.0.0
+### Changed
+- Moved many standalone functions to util.py
+- Using params (containing genesis hash and suggested fee) for transactions; deprecating individual genesis hash and fee inputs
+- Renamed params.py to node_params.py to avoid confusion with transaction "params" input
+- In KeyregTxn, selkey and votekey are now in base64 instead of base32
+- Renamed address_from_private_key() to public_key_from_private_key()
+
+## 1.1.1
+### Added
 - Added asset decimals field.
 
-# 1.1.0
-# Added
+## 1.1.0
+### Added
 - Added support for Algorand Standardized Assets (ASA)
 - Added support for Algorand Smart Contracts (ASC) 
     - Added support for Hashed Time Lock Contract (HTLC) 
