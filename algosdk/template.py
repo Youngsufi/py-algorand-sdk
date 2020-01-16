@@ -431,7 +431,7 @@ class LimitOrder(Template):
         asset_id = ints[6]
         ratn = ints[8]
         ratd = ints[7]
-        owner = encoding.encode_address(bytearrays[0])
+        owner = util.encode_address(bytearrays[0])
 
         if microalgo_amount < min_trade:
             raise error.TemplateError("At least " + str(min_trade) +
