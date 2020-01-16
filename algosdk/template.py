@@ -238,7 +238,7 @@ class DynamicFee(Template):
         txn.fee = max(constants.min_txn_fee, fee*txn.estimate_size())
 
         # reimbursement transaction
-        address = account.address_from_private_key(private_key)
+        address = util.public_key_from_private_key(private_key)
         txn_2 = transaction.PaymentTxn(address, fee, txn.first_valid_round,
                                        txn.last_valid_round, txn.genesis_hash,
                                        txn.sender, txn.fee, lease=txn.lease)
@@ -261,7 +261,7 @@ class DynamicFee(Template):
             private_key (bytes): the secret key to sign the contract in base64
             gh (str): genesis hash, in base64
         """
-        sender = account.address_from_private_key(private_key)
+        sender = util.public_key_from_private_key(private_key)
 
         # main transaction
         close = None if self.close_remainder_address == bytes(
@@ -342,7 +342,7 @@ class PeriodicPayment(Template):
         withdrawing_window = ints[4]
         period = ints[2]
         lease_value = bytearrays[0]
-        receiver = encoding.encode_address(bytearrays[1])
+        receiver = util.encode_address(bytearrays[1])
 
         if first_valid % period != 0:
             raise error.PeriodicPaymentDivisibilityError

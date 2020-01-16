@@ -870,8 +870,8 @@ class TestTemplate(unittest.TestCase):
         golden_txn = "iqNhbXTNE4ilY2xvc2XEIOaalh5vLV96yGYHkmVSvpgjXtMzY8qIkYu5yTipFbb5o2ZlZc0D6KJmds0wOaJnaMQgf4OxZX/x/FO5LcGBSKHWXfwtSx+j1ncoSt3SABJtkGmibHbNMDqibHjEIH+DsWV/8fxTuS3BgUih1l38LUsfo9Z3KErd0gASbZBpo3JjdsQg/ryguxRKWk6ntDikaBrIDmyhBby2B/xWUyXJVpX2ohOjc25kxCCFPYdMJymqcGoxdDeyuM8t6Kxixfq0PJCyJP71uhYT76R0eXBlo3BheQ=="
         golden_lsig = "gqFsxLEBIAUCAYgnuWC6YCYDIP68oLsUSlpOp7Q4pGgayA5soQW8tgf8VlMlyVaV9qITIOaalh5vLV96yGYHkmVSvpgjXtMzY8qIkYu5yTipFbb5IH+DsWV/8fxTuS3BgUih1l38LUsfo9Z3KErd0gASbZBpMgQiEjMAECMSEDMABzEAEhAzAAgxARIQMRYjEhAxECMSEDEHKBIQMQkpEhAxCCQSEDECJRIQMQQhBBIQMQYqEhCjc2lnxEAhLNdfdDp9Wbi0YwsEQCpP7TVHbHG7y41F4MoESNW/vL1guS+5Wj4f5V9fmM63/VKTSMFidHOSwm5o+pbV5lYH"
 
-        self.assertEqual(golden_txn, encoding.msgpack_encode(txn))
-        self.assertEqual(golden_lsig, encoding.msgpack_encode(lsig))
+        self.assertEqual(golden_txn, util.msgpack_encode(txn))
+        self.assertEqual(golden_lsig, util.msgpack_encode(lsig))
 
         sk_2 = ("2qjz96Vj9M6YOqtNlfJUOKac13EHCXyDty94ozCjuww" +
                 "riI+jzFgStFx9E6kEk1l4+lFsW4Te2PY1KV8kNcccRg==")
@@ -896,8 +896,8 @@ class TestTemplate(unittest.TestCase):
             "GUK0KORaJsds0wOqJseMQgf4OxZX/x/FO5LcGBSKHWXfwtSx+j1ncoSt3SABJt" +
             "kGmjcmN2xCCFPYdMJymqcGoxdDeyuM8t6Kxixfq0PJCyJP71uhYT76NzbmTEIC" +
             "uIj6PMWBK0XH0TqQSTWXj6UWxbhN7Y9jUpXyQ1xxxGpHR5cGWjcGF5")
-        actual = (base64.b64decode(encoding.msgpack_encode(txns[0])) +
-                  base64.b64decode(encoding.msgpack_encode(txns[1])))
+        actual = (base64.b64decode(util.msgpack_encode(txns[0])) +
+                  base64.b64decode(util.msgpack_encode(txns[1])))
         self.assertEqual(golden_txns, base64.b64encode(actual).decode())
 
     def test_periodic_payment(self):
@@ -929,7 +929,7 @@ class TestTemplate(unittest.TestCase):
                        "zhPM9MWjc25kxCBLJbVxcjvosDUorAMyDf1+VeOdg4S45R0MPTO" +
                        "fOQvDtqR0eXBlo3BheQ==")
         self.assertEqual(golden_ltxn,
-                         encoding.msgpack_encode(ltxn))
+                         util.msgpack_encode(ltxn))
 
     def test_limit_order_a(self):
         addr = "SKXZDBHECM6AS73GVPGJHMIRDMJKEAN5TUGMUPSKJCQ44E6M6TC2H2UJ3I"
@@ -968,8 +968,8 @@ class TestTemplate(unittest.TestCase):
                         "qEtrTNUb7bkEMhocHV1KggcixRDwUVx2cJ0qgb4GpHR5cGWlYX" +
                         "hmZXKkeGFpZM0nEA==")
 
-        self.assertEqual(encoding.msgpack_encode(stx_1), golden_txn_1)
-        self.assertEqual(encoding.msgpack_encode(stx_2), golden_txn_2)
+        self.assertEqual(util.msgpack_encode(stx_1), golden_txn_1)
+        self.assertEqual(util.msgpack_encode(stx_2), golden_txn_2)
 
 
 if __name__ == "__main__":
