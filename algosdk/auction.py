@@ -23,8 +23,8 @@ class Bid:
         auction_id (int)
 
     """
-    def __init__(self, bidder, bid_currency, max_price, bid_id, auction_key,
-                 auction_id):
+    def __init__(self, bidder: str, bid_currency: int, max_price: int, bid_id: int, auction_key: str,
+                 auction_id: int):
         self.bidder = bidder
         self.bid_currency = bid_currency
         self.max_price = max_price
@@ -43,7 +43,7 @@ class Bid:
         }
         return d
 
-    def sign(self, private_key):
+    def sign(self, private_key: str):
         """
         Sign a bid.
 
@@ -63,11 +63,11 @@ class Bid:
         return signed
 
     @staticmethod
-    def undictify(d):
+    def undictify(d: dict):
         return Bid(util.encode_address(d["bidder"]), d["cur"], d["price"],
                    d["id"], util.encode_address(d["auc"]), d["aid"])
 
-    def __eq__(self, other):
+    def __eq__(self, other: Bid):
         if not isinstance(other, Bid):
             return False
         return (self.bidder == other.bidder and
@@ -90,7 +90,7 @@ class SignedBid:
         bid (Bid)
         signature (str)
     """
-    def __init__(self, bid, signature):
+    def __init__(self, bid: Bid, signature: str):
         self.bid = bid
         self.signature = signature
 
@@ -102,11 +102,11 @@ class SignedBid:
         return d
 
     @staticmethod
-    def undictify(d):
+    def undictify(d: dict):
         return SignedBid(Bid.undictify(d["bid"]),
                          base64.b64encode(d["sig"]).decode())
 
-    def __eq__(self, other):
+    def __eq__(self, other: SignedBid):
         if not isinstance(other, SignedBid):
             return False
         return (self.bid == other.bid and
@@ -126,7 +126,7 @@ class NoteField:
         signed_bid (SignedBid)
         note_field_type (str)
     """
-    def __init__(self, signed_bid, note_field_type):
+    def __init__(self, signed_bid: SignedBid, note_field_type: str):
         self.signed_bid = signed_bid
         self.note_field_type = note_field_type
 
@@ -138,10 +138,10 @@ class NoteField:
         return d
 
     @staticmethod
-    def undictify(d):
+    def undictify(d: dict):
         return NoteField(SignedBid.undictify(d["b"]), d["t"])
 
-    def __eq__(self, other):
+    def __eq__(self, other: NoteField):
         if not isinstance(other, NoteField):
             return False
         return (self.signed_bid == other.signed_bid and

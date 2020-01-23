@@ -7,6 +7,7 @@ from . import util
 from . import error
 from . import transaction
 from . import constants
+from typing import List
 
 
 class KMDClient:
@@ -21,11 +22,11 @@ class KMDClient:
         kmd_token (str)
         kmd_address (str)
     """
-    def __init__(self, kmd_token, kmd_address):
+    def __init__(self, kmd_token: str, kmd_address: str) -> None:
         self.kmd_token = kmd_token
         self.kmd_address = kmd_address
 
-    def kmd_request(self, method, requrl, params=None, data=None):
+    def kmd_request(self, method: str, requrl: str, params: dict = None, data: dict = None) -> dict:
         """
         Execute a given request.
 
@@ -65,7 +66,7 @@ class KMDClient:
                 raise error.KMDHTTPError(e)
         return json.loads(resp.read().decode("utf-8"))
 
-    def versions(self):
+    def versions(self) -> List[str]:
         """
         Get kmd versions.
 
@@ -75,7 +76,7 @@ class KMDClient:
         req = "/versions"
         return self.kmd_request("GET", req)["versions"]
 
-    def list_wallets(self):
+    def list_wallets(self) -> List[dict]:
         """
         List all wallets hosted on node.
 

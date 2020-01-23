@@ -338,7 +338,7 @@ def read_from_file(path):
             txns.append(transaction.SignedTransaction.undictify(txn))
         elif "lsig" in txn:
             txns.append(transaction.LogicSigTransaction.undictify(txn))
-        elif "type" in txn:
-            txns.append(transaction.Transaction.undictify(txn))
+        elif "txn" in txn:
+            txns.append(transaction.Transaction.undictify(txn["txn"]))
     f.close()
     return txns

@@ -7,6 +7,18 @@
 - Renamed params.py to node_params.py to avoid confusion with transaction "params" input
 - In KeyregTxn, selkey and votekey are now in base64 instead of base32
 - Renamed address_from_private_key() to public_key_from_private_key()
+- Renamed retrieve_from_file() to read_from_file()
+- When sending a transaction, transaction ID is returned in a dictionary
+
+### Fixed
+- decoding plain transactions in read_from_file()
+
+### Added
+- contract templates:
+    - DynamicFee
+    - PeriodicPayment
+    - LimitOrder
+- type suggestions for functions
 
 ## 1.1.1
 ### Added
