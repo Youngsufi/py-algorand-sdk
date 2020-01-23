@@ -1,7 +1,7 @@
-algosdk.kmd
-===========
+util
+====
 
-.. automodule:: algosdk.kmd
+.. automodule:: algosdk.util
    :members:
    :undoc-members:
    :show-inheritance:

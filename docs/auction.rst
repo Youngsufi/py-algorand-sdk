@@ -1,5 +1,5 @@
-algosdk.auction
-===============
+auction
+=======
 
 .. automodule:: algosdk.auction
    :members:

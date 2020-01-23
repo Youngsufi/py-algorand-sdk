@@ -17,16 +17,12 @@ class KMDClient:
     Args:
         kmd_token (str): kmd API token
         kmd_address (str): kmd address
-
-    Attributes:
-        kmd_token (str)
-        kmd_address (str)
     """
     def __init__(self, kmd_token: str, kmd_address: str) -> None:
         self.kmd_token = kmd_token
         self.kmd_address = kmd_address
 
-    def kmd_request(self, method: str, requrl: str, params: dict = None, data: dict = None) -> dict:
+    def kmd_request(self, method: str, requrl: str, params: dict=None, data: dict=None) -> dict:
         """
         Execute a given request.
 
@@ -86,8 +82,8 @@ class KMDClient:
         req = "/wallets"
         return self.kmd_request("GET", req)["wallets"]
 
-    def create_wallet(self, name, pswd, driver_name="sqlite",
-                      master_deriv_key=None):
+    def create_wallet(self, name: str, pswd: str, driver_name: str="sqlite",
+                      master_deriv_key: str=None):
         """
         Create a new wallet.
 

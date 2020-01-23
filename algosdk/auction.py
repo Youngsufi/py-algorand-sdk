@@ -4,8 +4,9 @@ from nacl.signing import SigningKey
 
 
 class Bid:
-    """Represents a bid in an auction.
-
+    """
+    Represents a bid in an auction.
+    
     Args:
         bidder (str): address of the bidder
         bid_currency (int): how much external currency is being spent
@@ -13,18 +14,9 @@ class Bid:
         bid_id (int): bid ID
         auction_key (str): address of the auction
         auction_id (int): auction ID
-
-    Attributes:
-        bidder (str)
-        bid_currency (int)
-        max_price (int)
-        bid_id (int)
-        auction_key (str)
-        auction_id (int)
-
     """
-    def __init__(self, bidder: str, bid_currency: int, max_price: int, bid_id: int, auction_key: str,
-                 auction_id: int):
+
+    def __init__(self, bidder: str, bid_currency: int, max_price: int, bid_id: int, auction_key: str, auction_id: int):
         self.bidder = bidder
         self.bid_currency = bid_currency
         self.max_price = max_price
@@ -67,7 +59,7 @@ class Bid:
         return Bid(util.encode_address(d["bidder"]), d["cur"], d["price"],
                    d["id"], util.encode_address(d["auc"]), d["aid"])
 
-    def __eq__(self, other: Bid):
+    def __eq__(self, other: "Bid"):
         if not isinstance(other, Bid):
             return False
         return (self.bidder == other.bidder and
@@ -85,10 +77,6 @@ class SignedBid:
     Args:
         bid (Bid): bid that was signed
         signature (str): the signature of the bidder
-
-    Attributes:
-        bid (Bid)
-        signature (str)
     """
     def __init__(self, bid: Bid, signature: str):
         self.bid = bid
@@ -106,7 +94,7 @@ class SignedBid:
         return SignedBid(Bid.undictify(d["bid"]),
                          base64.b64encode(d["sig"]).decode())
 
-    def __eq__(self, other: SignedBid):
+    def __eq__(self, other: "SignedBid"):
         if not isinstance(other, SignedBid):
             return False
         return (self.bid == other.bid and
@@ -119,12 +107,7 @@ class NoteField:
 
     Args:
         signed_bid (SignedBid): bid with signature of bidder
-        note_field_type (str): the type of note; see constants for possible
-            types
-
-    Attributes:
-        signed_bid (SignedBid)
-        note_field_type (str)
+        note_field_type (str): the type of note; see constants for possible types
     """
     def __init__(self, signed_bid: SignedBid, note_field_type: str):
         self.signed_bid = signed_bid
@@ -141,7 +124,7 @@ class NoteField:
     def undictify(d: dict):
         return NoteField(SignedBid.undictify(d["b"]), d["t"])
 
-    def __eq__(self, other: NoteField):
+    def __eq__(self, other: "NoteField"):
         if not isinstance(other, NoteField):
             return False
         return (self.signed_bid == other.signed_bid and

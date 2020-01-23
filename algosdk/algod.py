@@ -18,18 +18,13 @@ class AlgodClient:
         algod_token (str): algod API token
         algod_address (str): algod address
         headers (dict, optional): extra header name/value for all requests
-
-    Attributes:
-        algod_token (str)
-        algod_address (str)
-        headers (dict)
     """
-    def __init__(self, algod_token: str, algod_address: str, headers: dict = None) -> None:
+    def __init__(self, algod_token: str, algod_address: str, headers: dict=None) -> None:
         self.algod_token = algod_token
         self.algod_address = algod_address
         self.headers = headers
 
-    def algod_request(self, method: str, requrl: str, params: dict = None, data: dict = None, headers: dict = None) -> dict:
+    def algod_request(self, method: str, requrl: str, params: dict=None, data: dict=None, headers: dict=None) -> dict:
         """
         Execute a given request.
 
@@ -115,7 +110,7 @@ class AlgodClient:
         req = "/ledger/supply"
         return self.algod_request("GET", req, **kwargs)
 
-    def transactions_by_address(self, address: str, first: int = None, last: int = None, limit: int = None, from_date: str = None, to_date: str = None, **kwargs) -> dict:
+    def transactions_by_address(self, address: str, first: int=None, last: int=None, limit: int=None, from_date: str=None, to_date: str=None, **kwargs) -> dict:
         """
         Return transactions for an address. If indexer is not enabled, you can
         search by date and you do not have to specify first and last rounds.
@@ -162,7 +157,7 @@ class AlgodClient:
         req = "/asset/" + str(index)
         return self.algod_request("GET", req, **kwargs)
 
-    def list_assets(self, max_index: int = None, max_assets: int = None, **kwargs) -> dict:
+    def list_assets(self, max_index: int=None, max_assets: int=None, **kwargs) -> dict:
         """
         Return a list of up to max_assets assets, where the maximum asset
         index is max_index.
@@ -259,7 +254,7 @@ class AlgodClient:
         return self.send_raw_transaction(base64.b64encode(
                                          b''.join(serialized)), **kwargs)
 
-    def block_info(self, round: int, **kwargs):
+    def block_info(self, round: int, **kwargs) -> dict:
         """
         Return block information.
 

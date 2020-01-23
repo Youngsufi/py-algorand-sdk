@@ -9,6 +9,7 @@
 - Renamed address_from_private_key() to public_key_from_private_key()
 - Renamed retrieve_from_file() to read_from_file()
 - When sending a transaction, transaction ID is returned in a dictionary
+- Removed redundant args/attributes in docstrings
 
 ### Fixed
 - decoding plain transactions in read_from_file()
