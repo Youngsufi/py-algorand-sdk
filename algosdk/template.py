@@ -188,7 +188,7 @@ class DynamicFee(Template):
         first_valid (int): first valid round for the transaction
         last_valid (int, optional): last valid round for the transaction
             (defaults to first_valid + 1000)
-        close_remainder_address (str): the address that recieves the remainder
+        close_remainder_address (str, optional): the address that recieves the remainder
     """
 
     def __init__(self, receiver: str, amount: int, first_valid: int,
@@ -215,8 +215,11 @@ class DynamicFee(Template):
                 "IQMQQhBBIQMQYqEhA=")
         orig = base64.b64decode(orig)
         offsets = [5, 6, 7, 11, 44, 76]
+        close = self.close_remainder_address
+        if close == None:
+            close = util.encode_address(bytes(32))
         values = [self.amount, self.first_valid, self.last_valid,
-                  self.receiver, self.close_remainder_address,
+                  self.receiver, close,
                   base64.b64encode(self.lease_value)]
         types = [int, int, int, "address", "address", "base64"]
         return inject(orig, offsets, values, types)
@@ -245,12 +248,12 @@ class DynamicFee(Template):
                                        txn.last_valid_round, txn.sender, txn.fee,
                                        lease=txn.lease)
 
-        transaction.assign_group_id([txn, txn_2])
+        transaction.assign_group_id([txn_2, txn])
 
         stx_1 = transaction.LogicSigTransaction(txn, lsig)
         stx_2 = txn_2.sign(private_key)
 
-        return [stx_1, stx_2]
+        return [stx_2, stx_1]
 
     def sign_dynamic_fee(self, private_key, gh):
         """
@@ -266,13 +269,11 @@ class DynamicFee(Template):
         sender = util.public_key_from_private_key(private_key)
 
         # main transaction
-        close = None if self.close_remainder_address == bytes(
-            constants.address_len) else self.close_remainder_address
         params = {"fee": 0, "genesishashb64": gh}
         txn = transaction.PaymentTxn(sender, params, self.first_valid,
                                      self.last_valid, self.receiver,
                                      self.amount, lease=self.lease_value,
-                                     close_remainder_to=close)
+                                     close_remainder_to=self.close_remainder_address)
         lsig = transaction.LogicSig(self.get_program())
         lsig.sign(private_key)
 
