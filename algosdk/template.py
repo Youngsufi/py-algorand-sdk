@@ -403,7 +403,7 @@ class LimitOrder(Template):
 
     @staticmethod
     def get_swap_assets_transactions(contract: bytes, asset_amount: int,
-                                     microalgo_amount:int, 
+                                     microalgo_amount: int,
                                      private_key: str, first_valid,
                                      last_valid, gh, fee):
         """
@@ -414,7 +414,7 @@ class LimitOrder(Template):
             contract (bytes): the contract containing information, should be
                 received from payer
             asset_amount (int): the amount of assets to be sent
-            microalgo_amount (int): the amount of algos to be received
+            microalgo_amount (int): the amount of microalgos to be received
             private_key (str): the secret key to sign the contract
             first_valid (int): first valid round for the transactions
             last_valid (int): last valid round for the transactions
