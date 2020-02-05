@@ -265,8 +265,8 @@ class DynamicFee(Template):
         params = {"fee": 0, "genesishashb64": gh}
         txn = transaction.PaymentTxn(sender, params, self.first_valid,
                                      self.last_valid, self.receiver,
-                                     self.amount, lease=self.lease_value,
-                                     close_remainder_to=self.close_remainder_address)
+                                     self.amount, self.close_remainder_address,
+                                     lease=self.lease_value)
         lsig = transaction.LogicSig(self.get_program())
         lsig.sign(private_key)
 

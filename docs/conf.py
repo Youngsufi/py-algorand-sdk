@@ -26,7 +26,8 @@ author = 'Algorand'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.napoleon', 'm2r', 'sphinx.ext.autodoc', 'sphinx_autodoc_typehints']
+extensions = ['sphinx.ext.napoleon', 'm2r', 'sphinx.ext.autodoc']
+# add 'sphinx_autodoc_typehints' to extensions for automatic processing of type hints
 source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
