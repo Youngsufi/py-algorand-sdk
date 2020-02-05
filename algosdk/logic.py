@@ -1,6 +1,6 @@
 import json
 import os
-
+from typing import List
 from . import constants
 from . import error
 from . import util
@@ -9,7 +9,7 @@ spec = None
 opcodes = None
 
 
-def check_program(program, args=None):
+def check_program(program: bytes, args: List[bytes]=None) -> bool:
     """
     Performs program checking for max length and cost
 

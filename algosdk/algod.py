@@ -215,7 +215,7 @@ class AlgodClient:
         req = "/transactions/params"
         return self.algod_request("GET", req, **kwargs)
 
-    def send_raw_transaction(self, txn: str, **kwargs) -> dict:
+    def send_raw_transaction(self, txn: str, **kwargs) -> str:
         """
         Broadcast a signed transaction to the network. Return transaction ID.
 
@@ -225,9 +225,9 @@ class AlgodClient:
         """
         txn = base64.b64decode(txn)
         req = "/transactions"
-        return self.algod_request("POST", req, data=txn, **kwargs)
+        return self.algod_request("POST", req, data=txn, **kwargs)["txId"]
 
-    def send_transaction(self, txn: transaction.SignedTransaction, **kwargs) -> dict:
+    def send_transaction(self, txn: transaction.SignedTransaction, **kwargs) -> str:
         """
         Broadcast a signed transaction object to the network. Return transaction ID.
 
@@ -238,7 +238,7 @@ class AlgodClient:
         return self.send_raw_transaction(util.msgpack_encode(txn),
                                          **kwargs)
 
-    def send_transactions(self, txns: List[transaction.SignedTransaction], **kwargs):
+    def send_transactions(self, txns: List[transaction.SignedTransaction], **kwargs) -> str:
         """
         Broadcast list of a signed transaction objects to the network. Return first transaction ID.
 

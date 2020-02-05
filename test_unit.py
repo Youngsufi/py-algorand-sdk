@@ -815,9 +815,8 @@ class TestTemplate(unittest.TestCase):
         golden_addr = "VNG63AMZ7YXA3EJS2LEBIS2BRCTQQ5V4I3GY3ZXXAT4XYBUJKQIVOFDTIM"
         self.assertEqual(s.get_program(), base64.b64decode(golden))
         self.assertEqual(s.get_address(), golden_addr)
-        s.get_send_funds_transaction(1000, 10, 1234, 2234,
-                                     "f4OxZX/x/FO5LcGBSKHWXf" +
-                                     "wtSx+j1ncoSt3SABJtkGk=")
+        params = {"fee": 10, "genesishashb64": "f4OxZX/x/FO5LcGBSKHWXfwtSx+j1ncoSt3SABJtkGk="}
+        s.get_send_funds_transaction(1000, params, 1234, 2234)
 
     def test_HTLC(self):
         addr1 = "726KBOYUJJNE5J5UHCSGQGWIBZWKCBN4WYD7YVSTEXEVNFPWUIJ7TAEOPM"
@@ -904,7 +903,9 @@ class TestTemplate(unittest.TestCase):
         self.assertEqual(p, base64.b64decode(golden))
         self.assertEqual(s.get_address(), golden_addr)
         gh = "f4OxZX/x/FO5LcGBSKHWXfwtSx+j1ncoSt3SABJtkGk="
-        ltxn = s.get_withdrawal_transaction(p, 1200, gh, 1000)
+        params = {"fee": 1000, "genesishashb64": gh}
+
+        ltxn = s.get_withdrawal_transaction(p, 1200, params)
         golden_ltxn = ("gqRsc2lngaFsxJkBIAcB6AdkAF+gwh68o5UBJgIgAQIDBAUGBwg" +
                        "BAgMEBQYHCAECAwQFBgcIAQIDBAUGBwggkq+RhOQTPAl/ZqvMk7" +
                        "ERGxKiAb2dDMo+SkihzhPM9MUxECISMQEjDhAxAiQYJRIQMQQhB" +
@@ -938,8 +939,9 @@ class TestTemplate(unittest.TestCase):
         sk = ("DTKVj7KMON3GSWBwMX9McQHtaDDi8SDEBi0bt4rOxlHNRah" +
               "La0zVG+25BDIaHB1dSoIHIsUQ8FFcdnCdKoG+Bg==")
         gh = "f4OxZX/x/FO5LcGBSKHWXfwtSx+j1ncoSt3SABJtkGk="
+        params = {"fee": 10, "genesishashb64": gh}
         [stx_1, stx_2] = s.get_swap_assets_transactions(
-            p, 3000, 10000, sk, 1234, 2234, gh, 10)
+            p, 3000, 10000, sk, 1234, 2234, params)
         golden_txn_1 = (
             "gqRsc2lngaFsxLcBIAoAAcCWsQICkE4EuWBkHsDEByYBIP68oLsUSlpOp7Q4pG" +
             "gayA5soQW8tgf8VlMlyVaV9qITMRYiEjEQIxIQMQEkDhAyBCMSQABVMgQlEjEI" +

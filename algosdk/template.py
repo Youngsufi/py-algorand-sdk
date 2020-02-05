@@ -66,17 +66,16 @@ class Split(Template):
         types = [int, int, int, int, int, "address", "address", "address"]
         return inject(orig, offsets, values, types)
 
-    def get_send_funds_transaction(self, amount: int, fee: int, first_valid,
-                                   last_valid, gh):
+    def get_send_funds_transaction(self, amount: int, params, first_valid,
+                                   last_valid):
         """
         Return a group transactions array which transfers funds according to
         the contract's ratio.
 
         Args:
             amount (int): amount to be transferred
-            fee (int): fee per byte
+            params (dict): transaction parameters from algod
             first_valid (int): first round where the transactions are valid
-            gh (str): genesis hash in base64
 
         Returns:
             Transaction[]
@@ -98,7 +97,6 @@ class Split(Template):
         else:
             raise error.NotDivisibleError
 
-        params = {"fee": fee, "genesishashb64": gh}
         txn_1 = transaction.PaymentTxn(self.get_address(), params,
                                        first_valid, last_valid,
                                        self.receiver_1, amt_1)
@@ -319,7 +317,7 @@ class PeriodicPayment(Template):
         return inject(orig, offsets, values, types)
 
     @staticmethod
-    def get_withdrawal_transaction(contract, first_valid, gh, fee):
+    def get_withdrawal_transaction(contract, first_valid, params):
         """
         Return the withdrawal transaction to be sent to the network.
 
@@ -328,8 +326,7 @@ class PeriodicPayment(Template):
                 received from payer
             first_valid (int): first round the transaction should be valid;
                 this must be a multiple of self.period
-            gh (str): genesis hash in base64
-            fee (int): fee per byte
+            params (dict): transaction parameters from algod
         """
         address = logic.address(contract)
         _, ints, bytearrays = logic.read_program(contract)
@@ -345,12 +342,7 @@ class PeriodicPayment(Template):
 
         if first_valid % period != 0:
             raise error.PeriodicPaymentDivisibilityError
-        params = {"fee": fee, "genesishashb64": gh}
-        txn = transaction.PaymentTxn(address, params,
-                                     first_valid, first_valid +
-                                     withdrawing_window,
-                                     receiver, amount,
-                                     lease=lease_value)
+        txn = transaction.PaymentTxn(address, params, first_valid, first_valid + withdrawing_window, receiver, amount, lease=lease_value)
 
         lsig = transaction.LogicSig(contract)
         stx = transaction.LogicSigTransaction(txn, lsig)
@@ -405,7 +397,7 @@ class LimitOrder(Template):
     def get_swap_assets_transactions(contract: bytes, asset_amount: int,
                                      microalgo_amount: int,
                                      private_key: str, first_valid,
-                                     last_valid, gh, fee):
+                                     last_valid, params):
         """
         Return a group transactions array which transfer funds according to
         the contract's ratio.
@@ -418,8 +410,7 @@ class LimitOrder(Template):
             private_key (str): the secret key to sign the contract
             first_valid (int): first valid round for the transactions
             last_valid (int): last valid round for the transactions
-            gh (str): genesis hash in base64
-            fee (int): fee per byte
+            params (dict): transaction parameters from algod
         """
         address = logic.address(contract)
         _, ints, bytearrays = logic.read_program(contract)
@@ -441,8 +432,6 @@ class LimitOrder(Template):
             raise error.TemplateError("The exchange ratio of assets to" +
                                       "microalgos must be at least " +
                                       str(ratn) + " / " + str(ratd))
-
-        params = {"fee": fee, "genesishashb64": gh}
 
         txn_1 = transaction.PaymentTxn(address, params,
                                        first_valid, last_valid,

@@ -3,11 +3,12 @@
 ## 2.0.0
 ### Changed
 - Moved many standalone functions to util.py
-- Using params (containing genesis hash and suggested fee) for transactions; deprecating individual genesis hash and fee inputs
+- Using params (containing genesis hash and suggested fee) for transaction and template inputs; deprecating individual genesis hash and fee inputs
 - Renamed params.py to node_params.py to avoid confusion with transaction "params" input
 - In KeyregTxn, selkey and votekey are now in base64 instead of base32
 - Renamed address_from_private_key() to public_key_from_private_key()
 - Renamed retrieve_from_file() to read_from_file()
+- write_to_file() can write any msgpack encodable object
 - When sending a transaction, transaction ID is returned in a dictionary
 - Removed redundant args/attributes in docstrings
 

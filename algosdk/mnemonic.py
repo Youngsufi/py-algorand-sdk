@@ -9,7 +9,7 @@ from . import util
 word_list = wordlist.word_list_raw().split("\n")
 
 
-def from_master_derivation_key(key):
+def from_master_derivation_key(key: str) -> str:
     """
     Return the mnemonic for the master derivation key.
 
@@ -24,7 +24,7 @@ def from_master_derivation_key(key):
     return _from_key(key)
 
 
-def to_master_derivation_key(mnemonic):
+def to_master_derivation_key(mnemonic: str) -> str:
     """
     Return the master derivation key for the mnemonic.
 
@@ -38,7 +38,7 @@ def to_master_derivation_key(mnemonic):
     return base64.b64encode(key_bytes).decode()
 
 
-def from_private_key(key):
+def from_private_key(key: str) -> str:
     """
     Return the mnemonic for the private key.
 
@@ -52,7 +52,7 @@ def from_private_key(key):
     return _from_key(key[:constants.key_len_bytes])
 
 
-def to_private_key(mnemonic):
+def to_private_key(mnemonic: str) -> str:
     """
     Return the private key for the mnemonic.
 
@@ -67,7 +67,7 @@ def to_private_key(mnemonic):
     return base64.b64encode(key.encode() + key.verify_key.encode()).decode()
 
 
-def to_public_key(mnemonic):
+def to_public_key(mnemonic: str) -> str:
     """
     Return the public key for the mnemonic.
 
