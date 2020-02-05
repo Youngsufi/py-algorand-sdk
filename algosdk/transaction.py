@@ -183,7 +183,7 @@ class PaymentTxn(Transaction):
         lease (byte[32])
     """
 
-    def __init__(self, sender, params,first, last, receiver, amt,
+    def __init__(self, sender, params, first, last, receiver, amt,
                  close_remainder_to=None, note=None, fee=None, gen=None,
                  gh=None, flat_fee=False, lease=None):
         Transaction.__init__(self, sender, params, first, last, note, fee,
@@ -204,7 +204,8 @@ class PaymentTxn(Transaction):
             d["amt"] = self.amt
         if self.close_remainder_to:
             d["close"] = util.decode_address(self.close_remainder_to)
-        d["rcv"] = util.decode_address(self.receiver)
+        if self.receiver:
+            d["rcv"] = util.decode_address(self.receiver)
 
         d.update(super(PaymentTxn, self).dictify())
         return d
@@ -212,9 +213,11 @@ class PaymentTxn(Transaction):
     @staticmethod
     def _undictify(d):
         args = {
-            "close_remainder_to": util.encode_address(d["close"]) if "close" in d else None,
+            "close_remainder_to": util.encode_address(
+                d["close"]) if "close" in d else None,
             "amt": d["amt"] if "amt" in d else 0,
-            "receiver": util.encode_address(d["rcv"])
+            "receiver": util.encode_address(
+                d["rcv"]) if "rcv" in d else None
         }
         return args
 
@@ -337,6 +340,7 @@ class AssetConfigTxn(Transaction):
 
     Args:
         sender (str): address of the sender
+        params (dict): transaction parameters from algod
         first (int): first round for which the transaction is valid
         last (int): last round for which the transaction is valid
         index (int, optional): index of the asset
@@ -556,6 +560,7 @@ class AssetFreezeTxn(Transaction):
     Args:
         sender (str): address of the sender, who must be the asset's freeze
             manager
+        params (dict): transaction parameters from algod
         first (int): first round for which the transaction is valid
         last (int): last round for which the transaction is valid
         index (int): index of the asset
@@ -645,6 +650,7 @@ class AssetTransferTxn(Transaction):
 
     Args:
         sender (str): address of the sender
+        params (dict): transaction parameters from algod
         first (int): first round for which the transaction is valid
         last (int): last round for which the transaction is valid
         receiver (str): address of the receiver
